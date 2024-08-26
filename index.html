@@ -151,6 +151,62 @@
             opacity: 0;
             transition: opacity 0.5s;
         }
+
+        #monkey {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23834c24"/><circle cx="35" cy="40" r="5" fill="white"/><circle cx="65" cy="40" r="5" fill="white"/><path d="M40 60 Q50 70 60 60" stroke="white" stroke-width="3" fill="none"/></svg>') no-repeat;
+            animation: monkeyEat 5s infinite;
+        }
+
+        @keyframes monkeyEat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        #banana {
+            position: fixed;
+            bottom: 130px;
+            right: 50px;
+            width: 50px;
+            height: 50px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 80 Q50 20 80 50" stroke="%23ffd700" stroke-width="20" fill="none"/></svg>') no-repeat;
+            animation: bananaFloat 3s infinite alternate;
+        }
+
+        @keyframes bananaFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+
+        #clock {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #clock-hand {
+            width: 4px;
+            height: 40px;
+            background-color: black;
+            transform-origin: bottom center;
+            animation: clockRotate 60s linear infinite;
+        }
+
+        @keyframes clockRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -164,6 +220,9 @@
     </div>
 
     <div id="level-up">עלית רמה!</div>
+    <div id="monkey"></div>
+    <div id="banana"></div>
+    <div id="clock"><div id="clock-hand"></div></div>
 
     <script>
         const words = [
@@ -171,12 +230,7 @@
             { hebrew: 'מנורה', english: 'LAMP' },
             { hebrew: 'ספר', english: 'BOOK' },
             { hebrew: 'מחשב', english: 'COMPUTER' },
-            { hebrew: 'קוף', english: 'MONKEY' },
-            { hebrew: 'בית', english: 'HOUSE' },
-            { hebrew: 'עץ', english: 'TREE' },
-            { hebrew: 'מים', english: 'WATER' },
-            { hebrew: 'שמש', english: 'SUN' },
-            { hebrew: 'ירח', english: 'MOON' }
+            { hebrew: 'קוף', english: 'MONKEY' }
         ];
 
         let score = 0;
@@ -193,6 +247,7 @@
         const startButton = document.getElementById('start-button');
         const restartButton = document.getElementById('restart-button');
         const levelUpElement = document.getElementById('level-up');
+        const clockHand = document.getElementById('clock-hand');
 
         // Создаем аудио контекст и звуки
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -222,6 +277,16 @@
             createOscillator(440, 0.1);
             setTimeout(() => createOscillator(554.37, 0.1), 100);
             setTimeout(() => createOscillator(659.25, 0.1), 200);
+        }
+
+        function playBackgroundMusic() {
+            const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+            let index = 0;
+            
+            setInterval(() => {
+                createOscillator(notes[index], 0.2);
+                index = (index + 1) % notes.length;
+            }, 500);
         }
 
         function shuffleArray(array) {
@@ -302,10 +367,12 @@
 
             createWordCards();
             createStars();
+            playBackgroundMusic();
 
             timer = setInterval(() => {
                 timeLeft--;
                 timerElement.textContent = `זמן: ${timeLeft} שניות`;
+                clockHand.style.transform = `rotate(${360 - (timeLeft / 60) * 360}deg)`;
 
                 if (timeLeft <= 0) {
                     endGame(false);
@@ -333,7 +400,6 @@
             firework.style.top = `${rect.top + rect.height / 2}px`;
             firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
             gameContainer.appendChild(firework);
-
             setTimeout(() => {
                 gameContainer.removeChild(firework);
             }, 1000);
@@ -364,11 +430,35 @@
             createWordCards();
         }
 
+        function animateMonkey() {
+            const monkey = document.getElementById('monkey');
+            const banana = document.getElementById('banana');
+            
+            banana.style.animation = 'none';
+            banana.offsetHeight; // Trigger reflow
+            banana.style.animation = null;
+
+            monkey.style.animation = 'none';
+            monkey.offsetHeight; // Trigger reflow
+            monkey.style.animation = 'monkeyEat 1s';
+
+            setTimeout(() => {
+                banana.style.opacity = '0';
+                setTimeout(() => {
+                    banana.style.opacity = '1';
+                    banana.style.animation = 'bananaFloat 3s infinite alternate';
+                }, 1000);
+            }, 500);
+        }
+
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
 
         // Создаем звезды при загрузке страницы
         createStars();
+
+        // Анимируем обезьяну каждые 10 секунд
+        setInterval(animateMonkey, 10000);
     </script>
 </body>
 </html>
