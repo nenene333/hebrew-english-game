@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משחק התאמת מילים מתקדם</title>
+    <title>משחק התאמת מילים אקסטרים</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
 
@@ -12,7 +12,8 @@
             padding: 0;
             height: 100%;
             font-family: 'Rubik', sans-serif;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
+            background: url('https://example.com/space-background.jpg') no-repeat center center fixed;
+            background-size: cover;
             overflow: hidden;
         }
 
@@ -24,6 +25,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            background-color: rgba(0, 0, 0, 0.7);
         }
 
         #word-container {
@@ -69,35 +71,38 @@
         }
 
         .word-card-front {
-            background-color: #3498db;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
             color: white;
         }
 
         .word-card-back {
-            background-color: #2ecc71;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
             color: white;
             transform: rotateY(180deg);
         }
 
         #score, #timer {
             font-size: 24px;
-            color: white;
+            color: #f39c12;
             margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
         #start-button, #restart-button {
             font-size: 20px;
             padding: 10px 20px;
-            background-color: #e74c3c;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         #start-button:hover, #restart-button:hover {
-            background-color: #c0392b;
+            transform: scale(1.05);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
         }
 
         .firework {
@@ -118,17 +123,48 @@
                 opacity: 0;
             }
         }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: white;
+            animation: twinkle 1s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        #level-up {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #f1c40f;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <h1 style="color: white;">משחק התאמת מילים</h1>
+        <h1 style="color: #f39c12; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">משחק התאמת מילים אקסטרים</h1>
         <div id="score">ניקוד: 0</div>
         <div id="timer">זמן: 60 שניות</div>
         <div id="word-container"></div>
         <button id="start-button">התחל משחק</button>
         <button id="restart-button" style="display: none;">שחק שוב</button>
     </div>
+
+    <div id="level-up">עלית רמה!</div>
 
     <audio id="background-music" loop>
         <source src="https://example.com/background-music.mp3" type="audio/mpeg">
@@ -138,6 +174,9 @@
     </audio>
     <audio id="wrong-sound">
         <source src="https://example.com/wrong-sound.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="level-up-sound">
+        <source src="https://example.com/level-up-sound.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -154,6 +193,7 @@
         let timer;
         let flippedCards = [];
         let matchedPairs = 0;
+        let level = 1;
 
         const gameContainer = document.getElementById('game-container');
         const wordContainer = document.getElementById('word-container');
@@ -164,6 +204,8 @@
         const backgroundMusic = document.getElementById('background-music');
         const correctSound = document.getElementById('correct-sound');
         const wrongSound = document.getElementById('wrong-sound');
+        const levelUpSound = document.getElementById('level-up-sound');
+        const levelUpElement = document.getElementById('level-up');
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -208,7 +250,7 @@
             const word2 = words.find(w => w.hebrew === cards[index2].querySelector('.word-card-back').textContent || w.english === cards[index2].querySelector('.word-card-back').textContent);
 
             if (word1 === word2) {
-                score += 10;
+                score += 10 * level;
                 scoreElement.textContent = `ניקוד: ${score}`;
                 matchedPairs++;
                 correctSound.play();
@@ -216,7 +258,7 @@
                 createFireworks(cards[index2]);
 
                 if (matchedPairs === words.length) {
-                    endGame(true);
+                    levelUp();
                 }
             } else {
                 setTimeout(() => {
@@ -234,6 +276,7 @@
             timeLeft = 60;
             matchedPairs = 0;
             flippedCards = [];
+            level = 1;
             scoreElement.textContent = 'ניקוד: 0';
             timerElement.textContent = 'זמן: 60 שניות';
             wordContainer.innerHTML = '';
@@ -241,6 +284,7 @@
             restartButton.style.display = 'none';
 
             createWordCards();
+            createStars();
             backgroundMusic.play();
 
             timer = setInterval(() => {
@@ -279,6 +323,31 @@
             setTimeout(() => {
                 gameContainer.removeChild(firework);
             }, 1000);
+        }
+
+        function createStars() {
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 1}s`;
+                gameContainer.appendChild(star);
+            }
+        }
+
+        function levelUp() {
+            level++;
+            levelUpSound.play();
+            levelUpElement.style.opacity = 1;
+            setTimeout(() => {
+                levelUpElement.style.opacity = 0;
+            }, 2000);
+
+            timeLeft += 30;
+            matchedPairs = 0;
+            wordContainer.innerHTML = '';
+            createWordCards();
         }
 
         startButton.addEventListener('click', startGame);
