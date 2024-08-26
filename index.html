@@ -12,8 +12,7 @@
             padding: 0;
             height: 100%;
             font-family: 'Rubik', sans-serif;
-            background: url('https://example.com/space-background.jpg') no-repeat center center fixed;
-            background-size: cover;
+            background: linear-gradient(45deg, #000033, #000066);
             overflow: hidden;
         }
 
@@ -25,7 +24,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(0, 0, 0, 0.5);
         }
 
         #word-container {
@@ -166,26 +165,18 @@
 
     <div id="level-up">עלית רמה!</div>
 
-    <audio id="background-music" loop>
-        <source src="https://example.com/background-music.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="correct-sound">
-        <source src="https://example.com/correct-sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="wrong-sound">
-        <source src="https://example.com/wrong-sound.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="level-up-sound">
-        <source src="https://example.com/level-up-sound.mp3" type="audio/mpeg">
-    </audio>
-
     <script>
         const words = [
             { hebrew: 'שולחן', english: 'DESK' },
             { hebrew: 'מנורה', english: 'LAMP' },
             { hebrew: 'ספר', english: 'BOOK' },
             { hebrew: 'מחשב', english: 'COMPUTER' },
-            { hebrew: 'קוף', english: 'MONKEY' }
+            { hebrew: 'קוף', english: 'MONKEY' },
+            { hebrew: 'בית', english: 'HOUSE' },
+            { hebrew: 'עץ', english: 'TREE' },
+            { hebrew: 'מים', english: 'WATER' },
+            { hebrew: 'שמש', english: 'SUN' },
+            { hebrew: 'ירח', english: 'MOON' }
         ];
 
         let score = 0;
@@ -201,11 +192,37 @@
         const timerElement = document.getElementById('timer');
         const startButton = document.getElementById('start-button');
         const restartButton = document.getElementById('restart-button');
-        const backgroundMusic = document.getElementById('background-music');
-        const correctSound = document.getElementById('correct-sound');
-        const wrongSound = document.getElementById('wrong-sound');
-        const levelUpSound = document.getElementById('level-up-sound');
         const levelUpElement = document.getElementById('level-up');
+
+        // Создаем аудио контекст и звуки
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function createOscillator(freq, duration) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = freq;
+            osc.start();
+            gain.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            osc.stop(audioContext.currentTime + duration);
+        }
+
+        function playCorrectSound() {
+            createOscillator(440, 0.1);
+            setTimeout(() => createOscillator(880, 0.1), 100);
+        }
+
+        function playWrongSound() {
+            createOscillator(220, 0.2);
+        }
+
+        function playLevelUpSound() {
+            createOscillator(440, 0.1);
+            setTimeout(() => createOscillator(554.37, 0.1), 100);
+            setTimeout(() => createOscillator(659.25, 0.1), 200);
+        }
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -253,7 +270,7 @@
                 score += 10 * level;
                 scoreElement.textContent = `ניקוד: ${score}`;
                 matchedPairs++;
-                correctSound.play();
+                playCorrectSound();
                 createFireworks(cards[index1]);
                 createFireworks(cards[index2]);
 
@@ -264,7 +281,7 @@
                 setTimeout(() => {
                     cards[index1].classList.remove('flipped');
                     cards[index2].classList.remove('flipped');
-                    wrongSound.play();
+                    playWrongSound();
                 }, 1000);
             }
 
@@ -285,7 +302,6 @@
 
             createWordCards();
             createStars();
-            backgroundMusic.play();
 
             timer = setInterval(() => {
                 timeLeft--;
@@ -299,8 +315,6 @@
 
         function endGame(isWin) {
             clearInterval(timer);
-            backgroundMusic.pause();
-            backgroundMusic.currentTime = 0;
 
             if (isWin) {
                 alert(`כל הכבוד! סיימת את המשחק עם ${score} נקודות!`);
@@ -338,7 +352,7 @@
 
         function levelUp() {
             level++;
-            levelUpSound.play();
+            playLevelUpSound();
             levelUpElement.style.opacity = 1;
             setTimeout(() => {
                 levelUpElement.style.opacity = 0;
@@ -352,6 +366,9 @@
 
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
+
+        // Создаем звезды при загрузке страницы
+        createStars();
     </script>
 </body>
 </html>
