@@ -337,7 +337,9 @@ function checkMatch() {
     const word1 = words.find(w => w.hebrew === text1 || w.english === text1);
     const word2 = words.find(w => w.hebrew === text2 || w.english === text2);
 
-    if (word1 && word2 && word1 === word2) {
+    if (word1 && word2 && 
+        ((word1.hebrew === word2.hebrew && word1.english === word2.english) || 
+         (word1.hebrew === word2.english || word1.english === word2.hebrew))) {
         score += 10 * level;
         scoreElement.textContent = `ניקוד: ${score}`;
         matchedPairs++;
@@ -346,6 +348,9 @@ function checkMatch() {
         createFireworks(cards[index2]);
         animateMonkey();
         createConfetti();
+
+        cards[index1].removeEventListener('click', flipCard);
+        cards[index2].removeEventListener('click', flipCard);
 
         if (matchedPairs === words.length) {
             levelUp();
