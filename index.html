@@ -183,16 +183,14 @@
         }
 
         #clock-hand {
+            position: absolute;
             width: 4px;
-            height: 40px;
+            height: 45px;
             background-color: #fbaf43;
+            bottom: 50%;
+            left: 50%;
             transform-origin: bottom center;
-            animation: clockRotate 60s linear infinite;
-        }
-
-        @keyframes clockRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            transition: transform 1s linear;
         }
 
         #monkey-container {
@@ -221,6 +219,21 @@
             0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
+
+        #victory-icons {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .victory-icon {
+            width: 50px;
+            height: 50px;
+        }
     </style>
 </head>
 <body>
@@ -237,6 +250,7 @@
     <div id="level-up">עלית רמה!</div>
     <div id="monkey-container"></div>
     <div id="clock"><div id="clock-hand"></div></div>
+    <div id="victory-icons"></div>
 
     <script>
         const words = [
@@ -254,6 +268,10 @@
         let matchedPairs = 0;
         let level = 1;
         let monkeyAnimation;
+        let backgroundMusic;
+        let correctSound;
+        let winSound;
+        let victoryAnimation;
 
         const gameContainer = document.getElementById('game-container');
         const wordContainer = document.getElementById('word-container');
@@ -263,45 +281,7 @@
         const restartButton = document.getElementById('restart-button');
         const levelUpElement = document.getElementById('level-up');
         const clockHand = document.getElementById('clock-hand');
-
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        function createOscillator(freq, duration) {
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            osc.frequency.value = freq;
-            osc.start();
-            gain.gain.setValueAtTime(0.5, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-            osc.stop(audioContext.currentTime + duration);
-        }
-
-        function playCorrectSound() {
-            createOscillator(440, 0.1);
-            setTimeout(() => createOscillator(880, 0.1), 100);
-        }
-
-        function playWrongSound() {
-            createOscillator(220, 0.2);
-        }
-
-        function playLevelUpSound() {
-            createOscillator(440, 0.1);
-            setTimeout(() => createOscillator(554.37, 0.1), 100);
-            setTimeout(() => createOscillator(659.25, 0.1), 200);
-        }
-
-        function playBackgroundMusic() {
-            const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
-            let index = 0;
-            
-            setInterval(() => {
-                createOscillator(notes[index], 0.2);
-                index = (index + 1) % notes.length;
-            }, 500);
-        }
+        const victoryIcons = document.getElementById('victory-icons');
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -349,14 +329,10 @@
                 score += 10 * level;
                 scoreElement.textContent = `ניקוד: ${score}`;
                 matchedPairs++;
-                playCorrectSound();
+                correctSound.play();
                 createFireworks(document.querySelectorAll('.word-card')[card1.index]);
                 createFireworks(document.querySelectorAll('.word-card')[card2.index]);
                 animateMonkey();
-                createConfetti();
-
-                document.querySelectorAll('.word-card')[card1.index].removeEventListener('click', flipCard);
-                document.querySelectorAll('.word-card')[card2.index].removeEventListener('click', flipCard);
 
                 if (matchedPairs === words.length) {
                     levelUp();
@@ -365,7 +341,6 @@
                 setTimeout(() => {
                     document.querySelectorAll('.word-card')[card1.index].classList.remove('flipped');
                     document.querySelectorAll('.word-card')[card2.index].classList.remove('flipped');
-                    playWrongSound();
                 }, 1000);
             }
 
@@ -392,7 +367,7 @@
             timer = setInterval(() => {
                 timeLeft--;
                 timerElement.textContent = `זמן: ${timeLeft} שניות`;
-                clockHand.style.transform = `rotate(${360 - (timeLeft / 60) * 360}deg)`;
+                updateClockHand();
 
                 if (timeLeft <= 0) {
                     endGame(false);
@@ -400,8 +375,9 @@
             }, 1000);
         }
 
-function endGame(isWin) {
+        function endGame(isWin) {
             clearInterval(timer);
+            backgroundMusic.pause();
 
             if (isWin) {
                 alert(`כל הכבוד! סיימת את המשחק עם ${score} נקודות!`);
@@ -437,9 +413,9 @@ function endGame(isWin) {
             }
         }
 
-        function levelUp() {
+function levelUp() {
             level++;
-            playLevelUpSound();
+            winSound.play();
             levelUpElement.style.opacity = 1;
             setTimeout(() => {
                 levelUpElement.style.opacity = 0;
@@ -449,7 +425,7 @@ function endGame(isWin) {
             matchedPairs = 0;
             wordContainer.innerHTML = '';
             createWordCards();
-            createConfetti();
+            showVictoryAnimation();
         }
 
         function loadMonkeyAnimation() {
@@ -468,19 +444,58 @@ function endGame(isWin) {
             }
         }
 
-        function createConfetti() {
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = `${Math.random() * 100}%`;
-                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear`;
-                gameContainer.appendChild(confetti);
+        function playBackgroundMusic() {
+            backgroundMusic = new Audio('https://github.com/nenene333/bkms.mp3');
+            backgroundMusic.loop = true;
+            backgroundMusic.play();
+        }
 
-                setTimeout(() => {
-                    gameContainer.removeChild(confetti);
-                }, 5000);
-            }
+        function loadSounds() {
+            correctSound = new Audio('https://github.com/nenene333/good.mp3');
+            winSound = new Audio('https://github.com/nenene333/win.mp3');
+        }
+
+        function updateClockHand() {
+            const rotation = 360 * (timeLeft / 60);
+            clockHand.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
+        }
+
+        function showVictoryAnimation() {
+            const victoryContainer = document.createElement('div');
+            victoryContainer.style.position = 'fixed';
+            victoryContainer.style.top = '50%';
+            victoryContainer.style.left = '50%';
+            victoryContainer.style.transform = 'translate(-50%, -50%)';
+            victoryContainer.style.width = '200px';
+            victoryContainer.style.height = '200px';
+            document.body.appendChild(victoryContainer);
+
+            victoryAnimation = lottie.loadAnimation({
+                container: victoryContainer,
+                renderer: 'svg',
+                loop: false,
+                autoplay: true,
+                path: 'https://github.com/nenene333/nnn.json'
+            });
+
+            victoryAnimation.addEventListener('complete', () => {
+                document.body.removeChild(victoryContainer);
+                addVictoryIcon();
+            });
+        }
+
+        function addVictoryIcon() {
+            const iconContainer = document.createElement('div');
+            iconContainer.className = 'victory-icon';
+            victoryIcons.appendChild(iconContainer);
+
+            lottie.loadAnimation({
+                container: iconContainer,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://github.com/nenene333/nnn.json'
+            });
         }
 
         startButton.addEventListener('click', startGame);
@@ -489,8 +504,11 @@ function endGame(isWin) {
         // יצירת כוכבים בטעינת הדף
         createStars();
 
-        // טעינת אנימציית הקוף בטעינת הדף
-        document.addEventListener('DOMContentLoaded', loadMonkeyAnimation);
+        // טעינת אנימציית הקוף ויתר הקבצים בטעינת הדף
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMonkeyAnimation();
+            loadSounds();
+        });
     </script>
 </body>
 </html>
