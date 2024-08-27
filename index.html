@@ -328,35 +328,35 @@
             }
         }
 
-        function checkMatch() {
-            const [index1, index2] = flippedCards;
-            const cards = document.querySelectorAll('.word-card');
-            const word1 = words.find(w => w.hebrew === cards[index1].querySelector('.word-card-back').textContent || w.english === cards[index1].querySelector('.word-card-back').textContent);
-            const word2 = words.find(w => w.hebrew === cards[index2].querySelector('.word-card-back').textContent || w.english === cards[index2].querySelector('.word-card-back').textContent);
+function checkMatch() {
+    const [index1, index2] = flippedCards;
+    const cards = document.querySelectorAll('.word-card');
+    const word1 = words.find(w => w.hebrew === cards[index1].querySelector('.word-card-back').textContent || w.english === cards[index1].querySelector('.word-card-back').textContent);
+    const word2 = words.find(w => w.hebrew === cards[index2].querySelector('.word-card-back').textContent || w.english === cards[index2].querySelector('.word-card-back').textContent);
 
-            if (word1 === word2) {
-                score += 10 * level;
-                scoreElement.textContent = `ניקוד: ${score}`;
-                matchedPairs++;
-                playCorrectSound();
-                createFireworks(cards[index1]);
-                createFireworks(cards[index2]);
-                animateMonkey();
-                createConfetti();
+    if (word1 && word2 && ((word1.hebrew === word2.english) || (word1.english === word2.hebrew))) {
+        score += 10 * level;
+        scoreElement.textContent = `ניקוד: ${score}`;
+        matchedPairs++;
+        playCorrectSound();
+        createFireworks(cards[index1]);
+        createFireworks(cards[index2]);
+        animateMonkey();
+        createConfetti();
 
-                if (matchedPairs === words.length) {
-                    levelUp();
-                }
-            } else {
-                setTimeout(() => {
-                    cards[index1].classList.remove('flipped');
-                    cards[index2].classList.remove('flipped');
-                    playWrongSound();
-                }, 1000);
-            }
-
-            flippedCards = [];
+        if (matchedPairs === words.length) {
+            levelUp();
         }
+    } else {
+        setTimeout(() => {
+            cards[index1].classList.remove('flipped');
+            cards[index2].classList.remove('flipped');
+            playWrongSound();
+        }, 1000);
+    }
+
+    flippedCards = [];
+}
 
         function startGame() {
             score = 0;
