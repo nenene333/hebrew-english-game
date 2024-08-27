@@ -277,7 +277,7 @@
                 score += 10 * level;
                 scoreElement.textContent = `ניקוד: ${score}`;
                 matchedPairs++;
-                correctSound.play();
+                correctSound.play().catch(error => console.log('Error playing correct sound:', error));
                 animateMonkey();
 
                 if (matchedPairs === words.length) {
@@ -294,6 +294,9 @@
         }
 
         function startGame() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            audioContext.resume().then(() => console.log('AudioContext resumed'));
+
             score = 0;
             timeLeft = 60;
             matchedPairs = 0;
@@ -335,7 +338,7 @@
 
         function levelUp() {
             level++;
-            winSound.play();
+            winSound.play().catch(error => console.log('Error playing win sound:', error));
             showVictoryAnimation();
 
             setTimeout(() => {
@@ -363,14 +366,14 @@
         }
 
         function playBackgroundMusic() {
-            backgroundMusic = new Audio('https://github.com/nenene333/bkms.mp3');
+            backgroundMusic = new Audio('https://nenene333.github.io/hebrew-english-game/bkms.mp3');
             backgroundMusic.loop = true;
-            backgroundMusic.play();
+            backgroundMusic.play().catch(error => console.log('Error playing background music:', error));
         }
 
         function loadSounds() {
-            correctSound = new Audio('https://github.com/nenene333/good.mp3');
-            winSound = new Audio('https://github.com/nenene333/win.mp3');
+            correctSound = new Audio('https://nenene333.github.io/hebrew-english-game/good.mp3');
+            winSound = new Audio('https://nenene333.github.io/hebrew-english-game/win.mp3');
         }
 
         function updateClockHand() {
@@ -385,7 +388,7 @@
                 renderer: 'svg',
                 loop: false,
                 autoplay: true,
-                path: 'https://github.com/nenene333/nnn.json'
+                path: 'https://nenene333.github.io/hebrew-english-game/nnn.json'
             });
 
             victoryAnimation.addEventListener('complete', () => {
@@ -404,14 +407,13 @@
                 renderer: 'svg',
                 loop: true,
                 autoplay: true,
-                path: 'https://github.com/nenene333/nnn.json'
+                path: 'https://nenene333.github.io/hebrew-english-game/nnn.json'
             });
         }
 
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
 
-        // טעינת אנימציית הקוף ויתר הקבצים בטעינת הדף
         document.addEventListener('DOMContentLoaded', () => {
             loadMonkeyAnimation();
             loadSounds();
