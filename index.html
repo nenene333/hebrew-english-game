@@ -124,50 +124,6 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.2);
         }
 
-        .firework {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            animation: explode 1s ease-out forwards;
-        }
-
-        @keyframes explode {
-            0% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: scale(30);
-                opacity: 0;
-            }
-        }
-
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background-color: #fbaf43;
-            animation: twinkle 1s infinite alternate;
-        }
-
-        @keyframes twinkle {
-            0% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        #level-up {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            color: #fbaf43;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-
         #clock {
             position: fixed;
             top: 20px;
@@ -199,25 +155,6 @@
             right: 20px;
             width: 200px;
             height: 200px;
-            animation: monkeyBounce 2s infinite alternate;
-        }
-
-        @keyframes monkeyBounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-20px); }
-        }
-
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: #fbaf43;
-            opacity: 0;
-        }
-
-        @keyframes confettiFall {
-            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
 
         #victory-icons {
@@ -234,6 +171,17 @@
             width: 50px;
             height: 50px;
         }
+
+        #victory-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            z-index: 1000;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -247,10 +195,10 @@
         <button id="restart-button" style="display: none;">שחק שוב</button>
     </div>
 
-    <div id="level-up">עלית רמה!</div>
     <div id="monkey-container"></div>
     <div id="clock"><div id="clock-hand"></div></div>
     <div id="victory-icons"></div>
+    <div id="victory-animation"></div>
 
     <script>
         const words = [
@@ -279,9 +227,9 @@
         const timerElement = document.getElementById('timer');
         const startButton = document.getElementById('start-button');
         const restartButton = document.getElementById('restart-button');
-        const levelUpElement = document.getElementById('level-up');
         const clockHand = document.getElementById('clock-hand');
         const victoryIcons = document.getElementById('victory-icons');
+        const victoryAnimationContainer = document.getElementById('victory-animation');
 
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -330,8 +278,6 @@
                 scoreElement.textContent = `ניקוד: ${score}`;
                 matchedPairs++;
                 correctSound.play();
-                createFireworks(document.querySelectorAll('.word-card')[card1.index]);
-                createFireworks(document.querySelectorAll('.word-card')[card2.index]);
                 animateMonkey();
 
                 if (matchedPairs === words.length) {
@@ -360,7 +306,6 @@
             restartButton.style.display = 'none';
 
             createWordCards();
-            createStars();
             playBackgroundMusic();
             loadMonkeyAnimation();
 
@@ -388,44 +333,17 @@
             restartButton.style.display = 'block';
         }
 
-        function createFireworks(element) {
-            const rect = element.getBoundingClientRect();
-            const firework = document.createElement('div');
-            firework.className = 'firework';
-            firework.style.left = `${rect.left + rect.width / 2}px`;
-            firework.style.top = `${rect.top + rect.height / 2}px`;
-            firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-            gameContainer.appendChild(firework);
-
-            setTimeout(() => {
-                gameContainer.removeChild(firework);
-            }, 1000);
-        }
-
-        function createStars() {
-            for (let i = 0; i < 100; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = `${Math.random() * 100}%`;
-                star.style.top = `${Math.random() * 100}%`;
-                star.style.animationDelay = `${Math.random() * 1}s`;
-                gameContainer.appendChild(star);
-            }
-        }
-
-function levelUp() {
+        function levelUp() {
             level++;
             winSound.play();
-            levelUpElement.style.opacity = 1;
-            setTimeout(() => {
-                levelUpElement.style.opacity = 0;
-            }, 2000);
-
-            timeLeft += 30;
-            matchedPairs = 0;
-            wordContainer.innerHTML = '';
-            createWordCards();
             showVictoryAnimation();
+
+            setTimeout(() => {
+                timeLeft += 30;
+                matchedPairs = 0;
+                wordContainer.innerHTML = '';
+                createWordCards();
+            }, 3000);
         }
 
         function loadMonkeyAnimation() {
@@ -456,22 +374,14 @@ function levelUp() {
         }
 
         function updateClockHand() {
-            const rotation = 360 * (timeLeft / 60);
+            const rotation = 360 - (timeLeft / 60) * 360;
             clockHand.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
         }
 
         function showVictoryAnimation() {
-            const victoryContainer = document.createElement('div');
-            victoryContainer.style.position = 'fixed';
-            victoryContainer.style.top = '50%';
-            victoryContainer.style.left = '50%';
-            victoryContainer.style.transform = 'translate(-50%, -50%)';
-            victoryContainer.style.width = '200px';
-            victoryContainer.style.height = '200px';
-            document.body.appendChild(victoryContainer);
-
+            victoryAnimationContainer.style.display = 'block';
             victoryAnimation = lottie.loadAnimation({
-                container: victoryContainer,
+                container: victoryAnimationContainer,
                 renderer: 'svg',
                 loop: false,
                 autoplay: true,
@@ -479,7 +389,7 @@ function levelUp() {
             });
 
             victoryAnimation.addEventListener('complete', () => {
-                document.body.removeChild(victoryContainer);
+                victoryAnimationContainer.style.display = 'none';
                 addVictoryIcon();
             });
         }
@@ -500,9 +410,6 @@ function levelUp() {
 
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
-
-        // יצירת כוכבים בטעינת הדף
-        createStars();
 
         // טעינת אנימציית הקוף ויתר הקבצים בטעינת הדף
         document.addEventListener('DOMContentLoaded', () => {
