@@ -6,81 +6,63 @@
     <title>משחק התאמת מילים אקסטרים</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.14/lottie.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap');
-
-        :root {
-            --primary-color: #803e96;
-            --secondary-color: #fbaf43;
-            --accent-color: #ff4d6d;
-            --background-color: #1a1a2e;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
 
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: 'Heebo', sans-serif;
-            background: var(--background-color);
-            color: #ffffff;
+            font-family: 'Rubik', sans-serif;
+            background: url('https://nenene333.github.io/hebrew-english-game/reka.jpg') no-repeat center center fixed;
+            background-size: cover;
             overflow: hidden;
+        }
+
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(128, 62, 150, 0.7);
+            z-index: -1;
         }
 
         #game-container {
             position: relative;
+            z-index: 1;
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: url('https://nenene333.github.io/hebrew-english-game/reka.jpg') no-repeat center center fixed;
-            background-size: cover;
-        }
-
-        #overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(128, 62, 150, 0.7), rgba(251, 175, 67, 0.7));
-            backdrop-filter: blur(10px);
-            z-index: 1;
-        }
-
-        #content {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            max-width: 1200px;
-            padding: 2rem;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            color: var(--secondary-color);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
         #word-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 800px;
         }
 
         .word-card {
+            width: 150px;
+            height: 150px;
             perspective: 1000px;
             cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .word-card:hover {
+            transform: scale(1.05);
         }
 
         .word-card-inner {
             position: relative;
             width: 100%;
-            height: 200px;
+            height: 100%;
             text-align: center;
             transition: transform 0.8s;
             transform-style: preserve-3d;
@@ -98,48 +80,80 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 18px;
             font-weight: bold;
-            border-radius: 15px;
+            border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             background-size: cover;
             background-position: center;
         }
 
         .word-card-front {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: #803e96;
             color: white;
         }
 
         .word-card-back {
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
+            background-color: rgba(251, 175, 67, 0.8);
             color: white;
             transform: rotateY(180deg);
         }
 
         #score, #timer {
-            font-size: 1.5rem;
-            margin: 1rem 0;
-            text-align: center;
-            color: var(--secondary-color);
+            font-size: 24px;
+            color: #fbaf43;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
         #start-button, #restart-button {
-            font-size: 1.2rem;
-            padding: 0.8rem 1.5rem;
-            background: var(--accent-color);
+            font-size: 20px;
+            padding: 10px 20px;
+            background: #fbaf43;
             color: white;
             border: none;
-            border-radius: 25px;
+            border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         #start-button:hover, #restart-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+            transform: scale(1.05);
+            background: #803e96;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(30);
+                opacity: 0;
+            }
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: #fbaf43;
+            animation: twinkle 1s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
         #level-up {
@@ -147,8 +161,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 3rem;
-            color: var(--accent-color);
+            font-size: 48px;
+            color: #fbaf43;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             opacity: 0;
             transition: opacity 0.5s;
@@ -158,11 +172,10 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            width: 60px;
-            height: 60px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
+            background-color: rgba(128, 62, 150, 0.2);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -170,9 +183,9 @@
         }
 
         #clock-hand {
-            width: 2px;
-            height: 25px;
-            background-color: var(--secondary-color);
+            width: 4px;
+            height: 40px;
+            background-color: #fbaf43;
             transform-origin: bottom center;
             animation: clockRotate 60s linear infinite;
         }
@@ -186,23 +199,39 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 150px;
-            height: 150px;
-            z-index: 1000;
+            width: 200px;
+            height: 200px;
+            animation: monkeyBounce 2s infinite alternate;
+        }
+
+        @keyframes monkeyBounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-20px); }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #fbaf43;
+            opacity: 0;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
         }
     </style>
 </head>
 <body>
+    <div id="overlay"></div>
     <div id="game-container">
-        <div id="overlay"></div>
-        <div id="content">
-            <h1>משחק התאמת מילים אקסטרים</h1>
-            <div id="score">ניקוד: 0</div>
-            <div id="timer">זמן: 60 שניות</div>
-            <div id="word-container"></div>
-            <button id="start-button">התחל משחק</button>
-            <button id="restart-button" style="display: none;">שחק שוב</button>
-        </div>
+        <h1 style="color: #fbaf43; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">משחק התאמת מילים אקסטרים</h1>
+        <div id="score">ניקוד: 0</div>
+        <div id="timer">זמן: 60 שניות</div>
+        <div id="word-container"></div>
+        <button id="start-button">התחל משחק</button>
+        <button id="restart-button" style="display: none;">שחק שוב</button>
     </div>
 
     <div id="level-up">עלית רמה!</div>
@@ -235,6 +264,45 @@
         const levelUpElement = document.getElementById('level-up');
         const clockHand = document.getElementById('clock-hand');
 
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function createOscillator(freq, duration) {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            osc.frequency.value = freq;
+            osc.start();
+            gain.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            osc.stop(audioContext.currentTime + duration);
+        }
+
+        function playCorrectSound() {
+            createOscillator(440, 0.1);
+            setTimeout(() => createOscillator(880, 0.1), 100);
+        }
+
+        function playWrongSound() {
+            createOscillator(220, 0.2);
+        }
+
+        function playLevelUpSound() {
+            createOscillator(440, 0.1);
+            setTimeout(() => createOscillator(554.37, 0.1), 100);
+            setTimeout(() => createOscillator(659.25, 0.1), 200);
+        }
+
+        function playBackgroundMusic() {
+            const notes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25];
+            let index = 0;
+            
+            setInterval(() => {
+                createOscillator(notes[index], 0.2);
+                index = (index + 1) % notes.length;
+            }, 500);
+        }
+
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -252,7 +320,7 @@
                 card.innerHTML = `
                     <div class="word-card-inner">
                         <div class="word-card-front">?</div>
-                        <div class="word-card-back" style="background-image: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1)), url('${word.image}');">
+                        <div class="word-card-back" style="background-image: url('${word.image}');">
                             ${word.type === 'hebrew' ? word.hebrew : word.english}
                         </div>
                     </div>
@@ -281,6 +349,11 @@
                 score += 10 * level;
                 scoreElement.textContent = `ניקוד: ${score}`;
                 matchedPairs++;
+                playCorrectSound();
+                createFireworks(document.querySelectorAll('.word-card')[card1.index]);
+                createFireworks(document.querySelectorAll('.word-card')[card2.index]);
+                animateMonkey();
+                createConfetti();
 
                 document.querySelectorAll('.word-card')[card1.index].removeEventListener('click', flipCard);
                 document.querySelectorAll('.word-card')[card2.index].removeEventListener('click', flipCard);
@@ -292,6 +365,7 @@
                 setTimeout(() => {
                     document.querySelectorAll('.word-card')[card1.index].classList.remove('flipped');
                     document.querySelectorAll('.word-card')[card2.index].classList.remove('flipped');
+                    playWrongSound();
                 }, 1000);
             }
 
@@ -311,6 +385,8 @@
             restartButton.style.display = 'none';
 
             createWordCards();
+            createStars();
+            playBackgroundMusic();
             loadMonkeyAnimation();
 
             timer = setInterval(() => {
@@ -324,7 +400,7 @@
             }, 1000);
         }
 
-        function endGame(isWin) {
+function endGame(isWin) {
             clearInterval(timer);
 
             if (isWin) {
@@ -336,8 +412,34 @@
             restartButton.style.display = 'block';
         }
 
+        function createFireworks(element) {
+            const rect = element.getBoundingClientRect();
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = `${rect.left + rect.width / 2}px`;
+            firework.style.top = `${rect.top + rect.height / 2}px`;
+            firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            gameContainer.appendChild(firework);
+
+            setTimeout(() => {
+                gameContainer.removeChild(firework);
+            }, 1000);
+        }
+
+        function createStars() {
+            for (let i = 0; i < 100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 1}s`;
+                gameContainer.appendChild(star);
+            }
+        }
+
         function levelUp() {
             level++;
+            playLevelUpSound();
             levelUpElement.style.opacity = 1;
             setTimeout(() => {
                 levelUpElement.style.opacity = 0;
@@ -347,6 +449,7 @@
             matchedPairs = 0;
             wordContainer.innerHTML = '';
             createWordCards();
+            createConfetti();
         }
 
         function loadMonkeyAnimation() {
@@ -359,8 +462,32 @@
             });
         }
 
+        function animateMonkey() {
+            if (monkeyAnimation) {
+                monkeyAnimation.playSegments([0, 60], true);
+            }
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animation = `confettiFall ${Math.random() * 3 + 2}s linear`;
+                gameContainer.appendChild(confetti);
+
+                setTimeout(() => {
+                    gameContainer.removeChild(confetti);
+                }, 5000);
+            }
+        }
+
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
+
+        // יצירת כוכבים בטעינת הדף
+        createStars();
 
         // טעינת אנימציית הקוף בטעינת הדף
         document.addEventListener('DOMContentLoaded', loadMonkeyAnimation);
