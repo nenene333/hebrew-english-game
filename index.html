@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>משחק התאמת מילים אקסטרים</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.14/lottie.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
 
@@ -152,36 +153,6 @@
             transition: opacity 0.5s;
         }
 
-        #monkey {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 100px;
-            height: 100px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%23834c24"/><circle cx="35" cy="40" r="5" fill="white"/><circle cx="65" cy="40" r="5" fill="white"/><path d="M40 60 Q50 70 60 60" stroke="white" stroke-width="3" fill="none"/></svg>') no-repeat;
-            animation: monkeyEat 5s infinite;
-        }
-
-        @keyframes monkeyEat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        #banana {
-            position: fixed;
-            bottom: 130px;
-            right: 50px;
-            width: 50px;
-            height: 50px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20 80 Q50 20 80 50" stroke="%23ffd700" stroke-width="20" fill="none"/></svg>') no-repeat;
-            animation: bananaFloat 3s infinite alternate;
-        }
-
-        @keyframes bananaFloat {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-20px); }
-        }
-
         #clock {
             position: fixed;
             top: 20px;
@@ -220,8 +191,7 @@
     </div>
 
     <div id="level-up">עלית רמה!</div>
-    <div id="monkey"></div>
-    <div id="banana"></div>
+    <div id="monkey-animation" style="width: 200px; height: 200px; position: fixed; bottom: 20px; right: 20px;"></div>
     <div id="clock"><div id="clock-hand"></div></div>
 
     <script>
@@ -239,6 +209,7 @@
         let flippedCards = [];
         let matchedPairs = 0;
         let level = 1;
+        let monkeyAnimation;
 
         const gameContainer = document.getElementById('game-container');
         const wordContainer = document.getElementById('word-container');
@@ -249,7 +220,6 @@
         const levelUpElement = document.getElementById('level-up');
         const clockHand = document.getElementById('clock-hand');
 
-        // Создаем аудио контекст и звуки
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
         function createOscillator(freq, duration) {
@@ -338,6 +308,7 @@
                 playCorrectSound();
                 createFireworks(cards[index1]);
                 createFireworks(cards[index2]);
+                animateMonkey();
 
                 if (matchedPairs === words.length) {
                     levelUp();
@@ -368,6 +339,7 @@
             createWordCards();
             createStars();
             playBackgroundMusic();
+            loadMonkeyAnimation();
 
             timer = setInterval(() => {
                 timeLeft--;
@@ -400,6 +372,7 @@
             firework.style.top = `${rect.top + rect.height / 2}px`;
             firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
             gameContainer.appendChild(firework);
+
             setTimeout(() => {
                 gameContainer.removeChild(firework);
             }, 1000);
@@ -430,35 +403,30 @@
             createWordCards();
         }
 
-        function animateMonkey() {
-            const monkey = document.getElementById('monkey');
-            const banana = document.getElementById('banana');
-            
-            banana.style.animation = 'none';
-            banana.offsetHeight; // Trigger reflow
-            banana.style.animation = null;
-
-            monkey.style.animation = 'none';
-            monkey.offsetHeight; // Trigger reflow
-            monkey.style.animation = 'monkeyEat 1s';
-
-            setTimeout(() => {
-                banana.style.opacity = '0';
-                setTimeout(() => {
-                    banana.style.opacity = '1';
-                    banana.style.animation = 'bananaFloat 3s infinite alternate';
-                }, 1000);
-            }, 500);
+        function loadMonkeyAnimation() {
+            monkeyAnimation = lottie.loadAnimation({
+                container: document.getElementById('monkey-animation'),
+                renderer: 'svg',
+                loop: true,
+                autoplay: false,
+                path: 'path/to/your/monkey-animation.json' // החלף זאת בנתיב האמיתי לקובץ ה-JSON שלך
+            });
         }
+
+        function animateMonkey() {
+            if (monkeyAnimation) {
+                monkeyAnimation.goToAndPlay(0);
+            }
+            }
 
         startButton.addEventListener('click', startGame);
         restartButton.addEventListener('click', startGame);
 
-        // Создаем звезды при загрузке страницы
+        // יצירת כוכבים בטעינת הדף
         createStars();
 
-        // Анимируем обезьяну каждые 10 секунд
-        setInterval(animateMonkey, 10000);
+        // טעינת אנימציית הקוף בטעינת הדף
+        document.addEventListener('DOMContentLoaded', loadMonkeyAnimation);
     </script>
 </body>
 </html>
