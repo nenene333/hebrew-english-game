@@ -75,11 +75,6 @@
         .word-card {
             perspective: 1000px;
             cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .word-card:hover {
-            transform: scale(1.05);
         }
 
         .word-card-inner {
@@ -147,19 +142,6 @@
             box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
 
-        .firework {
-            position: absolute;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            animation: explode 1s ease-out forwards;
-        }
-
-        @keyframes explode {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(30); opacity: 0; }
-        }
-
         #level-up {
             position: fixed;
             top: 50%;
@@ -206,25 +188,7 @@
             right: 20px;
             width: 150px;
             height: 150px;
-            animation: monkeyBounce 2s infinite alternate;
-        }
-
-        @keyframes monkeyBounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-20px); }
-        }
-
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: var(--secondary-color);
-            opacity: 0;
-        }
-
-        @keyframes confettiFall {
-            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            z-index: 1000;
         }
     </style>
 </head>
@@ -246,7 +210,37 @@
     <div id="clock"><div id="clock-hand"></div></div>
 
     <script>
-        // הקוד JavaScript נשאר זהה, אך נוסיף כמה שיפורים קטנים
+        const words = [
+            { hebrew: 'שולחן', english: 'DESK', image: 'https://img.freepik.com/free-photo/office-desktop-with-notebook_23-2148174059.jpg' },
+            { hebrew: 'מנורה', english: 'LAMP', image: 'https://img.freepik.com/free-photo/modern-photorealistic-lamp-design_23-2151038974.jpg' },
+            { hebrew: 'ספר', english: 'BOOK', image: 'https://img.freepik.com/free-photo/pages-open-book_23-2147690479.jpg' },
+            { hebrew: 'מחשב', english: 'COMPUTER', image: 'https://img.freepik.com/free-photo/laptop-with-blank-black-screen-white-table_53876-97915.jpg' },
+            { hebrew: 'קוף', english: 'MONKEY', image: 'https://img.freepik.com/free-photo/beautiful-monkey-spending-time-nature_23-2150754462.jpg' }
+        ];
+
+        let score = 0;
+        let timeLeft = 60;
+        let timer;
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let level = 1;
+        let monkeyAnimation;
+
+        const gameContainer = document.getElementById('game-container');
+        const wordContainer = document.getElementById('word-container');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const startButton = document.getElementById('start-button');
+        const restartButton = document.getElementById('restart-button');
+        const levelUpElement = document.getElementById('level-up');
+        const clockHand = document.getElementById('clock-hand');
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
 
         function createWordCards() {
             const allWords = [...words.map(w => ({ ...w, type: 'hebrew' })), ...words.map(w => ({ ...w, type: 'english' }))];
@@ -268,28 +262,108 @@
             });
         }
 
-        function createFireworks(element) {
-            for (let i = 0; i < 5; i++) {
-                const firework = document.createElement('div');
-                firework.className = 'firework';
-                firework.style.left = `${Math.random() * 100}%`;
-                firework.style.top = `${Math.random() * 100}%`;
-                firework.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                gameContainer.appendChild(firework);
+        function flipCard(card, word, index) {
+            if (flippedCards.length < 2 && !flippedCards.includes(index) && !card.classList.contains('flipped')) {
+                card.classList.add('flipped');
+                flippedCards.push({index, word});
 
-                setTimeout(() => {
-                    gameContainer.removeChild(firework);
-                }, 1000);
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 500);
+                }
             }
         }
 
-        // הוספת אנימציה לכפתורים
-        startButton.addEventListener('mouseenter', () => startButton.style.transform = 'translateY(-3px)');
-        startButton.addEventListener('mouseleave', () => startButton.style.transform = 'translateY(0)');
-        restartButton.addEventListener('mouseenter', () => restartButton.style.transform = 'translateY(-3px)');
-        restartButton.addEventListener('mouseleave', () => restartButton.style.transform = 'translateY(0)');
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = (card1.word.hebrew === card2.word.hebrew && card1.word.english === card2.word.english);
 
-        // שאר הקוד JavaScript נשאר זהה
+            if (isMatch) {
+                score += 10 * level;
+                scoreElement.textContent = `ניקוד: ${score}`;
+                matchedPairs++;
+
+                document.querySelectorAll('.word-card')[card1.index].removeEventListener('click', flipCard);
+                document.querySelectorAll('.word-card')[card2.index].removeEventListener('click', flipCard);
+
+                if (matchedPairs === words.length) {
+                    levelUp();
+                }
+            } else {
+                setTimeout(() => {
+                    document.querySelectorAll('.word-card')[card1.index].classList.remove('flipped');
+                    document.querySelectorAll('.word-card')[card2.index].classList.remove('flipped');
+                }, 1000);
+            }
+
+            flippedCards = [];
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            matchedPairs = 0;
+            flippedCards = [];
+            level = 1;
+            scoreElement.textContent = 'ניקוד: 0';
+            timerElement.textContent = 'זמן: 60 שניות';
+            wordContainer.innerHTML = '';
+            startButton.style.display = 'none';
+            restartButton.style.display = 'none';
+
+            createWordCards();
+            loadMonkeyAnimation();
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `זמן: ${timeLeft} שניות`;
+                clockHand.style.transform = `rotate(${360 - (timeLeft / 60) * 360}deg)`;
+
+                if (timeLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function endGame(isWin) {
+            clearInterval(timer);
+
+            if (isWin) {
+                alert(`כל הכבוד! סיימת את המשחק עם ${score} נקודות!`);
+            } else {
+                alert(`נגמר הזמן! הניקוד הסופי שלך הוא ${score} נקודות.`);
+            }
+
+            restartButton.style.display = 'block';
+        }
+
+        function levelUp() {
+            level++;
+            levelUpElement.style.opacity = 1;
+            setTimeout(() => {
+                levelUpElement.style.opacity = 0;
+            }, 2000);
+
+            timeLeft += 30;
+            matchedPairs = 0;
+            wordContainer.innerHTML = '';
+            createWordCards();
+        }
+
+        function loadMonkeyAnimation() {
+            monkeyAnimation = lottie.loadAnimation({
+                container: document.getElementById('monkey-container'),
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: 'https://nenene333.github.io/hebrew-english-game/monkey.json'
+            });
+        }
+
+        startButton.addEventListener('click', startGame);
+        restartButton.addEventListener('click', startGame);
+
+        // טעינת אנימציית הקוף בטעינת הדף
+        document.addEventListener('DOMContentLoaded', loadMonkeyAnimation);
     </script>
 </body>
 </html>
