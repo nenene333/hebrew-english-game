@@ -320,7 +320,7 @@
         function flipCard(card, word, index) {
             if (flippedCards.length < 2 && !flippedCards.includes(index) && !card.classList.contains('flipped')) {
                 card.classList.add('flipped');
-                flippedCards.push(index);
+                flippedCards.push({index, word});
 
                 if (flippedCards.length === 2) {
                     setTimeout(checkMatch, 500);
@@ -328,43 +328,36 @@
             }
         }
 
-function checkMatch() {
-    const [index1, index2] = flippedCards;
-    const cards = document.querySelectorAll('.word-card');
-    const text1 = cards[index1].querySelector('.word-card-back').textContent;
-    const text2 = cards[index2].querySelector('.word-card-back').textContent;
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const isMatch = (card1.word.hebrew === card2.word.hebrew && card1.word.english === card2.word.english);
 
-    const word1 = words.find(w => w.hebrew === text1 || w.english === text1);
-    const word2 = words.find(w => w.hebrew === text2 || w.english === text2);
+            if (isMatch) {
+                score += 10 * level;
+                scoreElement.textContent = `ניקוד: ${score}`;
+                matchedPairs++;
+                playCorrectSound();
+                createFireworks(document.querySelectorAll('.word-card')[card1.index]);
+                createFireworks(document.querySelectorAll('.word-card')[card2.index]);
+                animateMonkey();
+                createConfetti();
 
-    if (word1 && word2 && 
-        ((word1.hebrew === word2.hebrew && word1.english === word2.english) || 
-         (word1.hebrew === word2.english || word1.english === word2.hebrew))) {
-        score += 10 * level;
-        scoreElement.textContent = `ניקוד: ${score}`;
-        matchedPairs++;
-        playCorrectSound();
-        createFireworks(cards[index1]);
-        createFireworks(cards[index2]);
-        animateMonkey();
-        createConfetti();
+                document.querySelectorAll('.word-card')[card1.index].removeEventListener('click', flipCard);
+                document.querySelectorAll('.word-card')[card2.index].removeEventListener('click', flipCard);
 
-        cards[index1].removeEventListener('click', flipCard);
-        cards[index2].removeEventListener('click', flipCard);
+                if (matchedPairs === words.length) {
+                    levelUp();
+                }
+            } else {
+                setTimeout(() => {
+                    document.querySelectorAll('.word-card')[card1.index].classList.remove('flipped');
+                    document.querySelectorAll('.word-card')[card2.index].classList.remove('flipped');
+                    playWrongSound();
+                }, 1000);
+            }
 
-        if (matchedPairs === words.length) {
-            levelUp();
+            flippedCards = [];
         }
-    } else {
-        setTimeout(() => {
-            cards[index1].classList.remove('flipped');
-            cards[index2].classList.remove('flipped');
-            playWrongSound();
-        }, 1000);
-    }
-
-    flippedCards = [];
-}
 
         function startGame() {
             score = 0;
