@@ -3,421 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>משחק התאמת מילים אקסטרים</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.14/lottie.min.js"></script>
+    <title>ישיבת הינני - חינוך מתוך מקור</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Assistant', sans-serif;
+        }
 
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            font-family: 'Rubik', sans-serif;
-            background: url('https://nenene333.github.io/hebrew-english-game/reka.jpg') no-repeat center center fixed;
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                        url('https://videocdn.cdnpk.net/videos/1ac1f31f-f22c-4524-b81b-f9e6880fcc35/horizontal/thumbnails/large.jpg');
             background-size: cover;
-            overflow: hidden;
+            background-position: center;
+            background-attachment: fixed;
+            height: 100vh;
         }
 
-        #overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(128, 62, 150, 0.7);
-            z-index: -1;
-        }
-
-        #game-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #word-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            max-width: 800px;
-        }
-
-        .word-card {
-            width: 150px;
-            height: 150px;
-            perspective: 1000px;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .word-card:hover {
-            transform: scale(1.05);
-        }
-
-        .word-card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.8s;
-            transform-style: preserve-3d;
-        }
-
-        .word-card.flipped .word-card-inner {
-            transform: rotateY(180deg);
-        }
-
-        .word-card-front, .word-card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        .story-bg {
+            background: linear-gradient(to left, rgba(26, 54, 93, 0.95), rgba(26, 54, 93, 0.8)),
+                        url('https://ynet-pic1.yit.co.il/picserver5/crop_images/2022/05/11/HJtnatYUc/HJtnatYUc_0_0_1387_912_0_x-large.jpg');
             background-size: cover;
             background-position: center;
         }
 
-        .word-card-front {
-            background: #803e96;
-            color: white;
+        .key-quote {
+            font-size: 1.5rem;
+            line-height: 1.5;
+            position: relative;
+            margin: 2rem 0;
+            padding-right: 2rem;
         }
 
-        .word-card-back {
-            background-color: rgba(251, 175, 67, 0.8);
-            color: white;
-            transform: rotateY(180deg);
-        }
-
-        #score, #timer {
-            font-size: 24px;
-            color: #fbaf43;
-            margin: 20px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        #start-button, #restart-button {
-            font-size: 20px;
-            padding: 10px 20px;
-            background: #fbaf43;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        #start-button:hover, #restart-button:hover {
-            transform: scale(1.05);
-            background: #803e96;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-        }
-
-        #clock {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-color: rgba(128, 62, 150, 0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-
-        #clock-hand {
+        .key-quote::before {
+            content: '';
             position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
             width: 4px;
-            height: 45px;
-            background-color: #fbaf43;
-            bottom: 50%;
-            left: 50%;
-            transform-origin: bottom center;
-            transition: transform 1s linear;
+            background: #DEB541;
         }
 
-        #monkey-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 200px;
-            height: 200px;
+        .transition-quote {
+            font-size: 1.75rem;
+            line-height: 1.4;
+            padding: 2rem 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 2rem 0;
         }
 
-        #victory-icons {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
+        .highlight-text {
+            border-bottom: 2px solid rgba(222, 181, 65, 0.3);
+            display: inline;
         }
 
-        .victory-icon {
-            width: 50px;
-            height: 50px;
+        .feature-card {
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
         }
 
-        #victory-animation {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
-            z-index: 1000;
-            display: none;
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .nav-blur {
+            backdrop-filter: blur(10px);
+            background-color: rgba(11, 20, 38, 0.7);
+        }
+
+        .gold-text {
+            color: #DEB541;
+        }
+
+        .section-padding {
+            padding: 6rem 0;
+        }
+
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .text-shadow {
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ---------------------------------------------------------------- */
+        /*    שינוי פלטת הצבעים החל מכותרת "איך זה קורה בפועל" ואילך       */
+        /* ---------------------------------------------------------------- */
+
+        /* קטע "איך זה קורה בפועל": כעת רקע לבן וטקסט כהה */
+        .how-section {
+            background-color: #ffffff;
+            color: #0b1426;
+        }
+        .how-section .feature-card {
+            background: rgba(0, 0, 0, 0.05);
+            backdrop-filter: none;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .how-section .feature-card:hover {
+            border-color: rgba(222, 181, 65, 0.5);
+        }
+
+        /* קטע "מי אנחנו?" */
+        .who-section {
+            background-color: #ffffff;
+            color: #0b1426;
+        }
+
+        /* קטע "למי זה מתאים?" */
+        .for-whom-section {
+            background-color: #ffffff;
+            color: #0b1426;
+        }
+
+        /* קטע "המחזור הראשון" */
+        .first-cohort-section {
+            background-color: #ffffff;
+            color: #0b1426;
+        }
+
+        /* קטע "ליצירת קשר" */
+        .contact-section {
+            background-color: #ffffff;
+            color: #0b1426;
         }
     </style>
 </head>
-<body>
-    <div id="overlay"></div>
-    <div id="game-container">
-        <h1 style="color: #fbaf43; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">משחק התאמת מילים אקסטרים</h1>
-        <div id="score">ניקוד: 0</div>
-        <div id="timer">זמן: 60 שניות</div>
-        <div id="word-container"></div>
-        <button id="start-button">התחל משחק</button>
-        <button id="restart-button" style="display: none;">שחק שוב</button>
-    </div>
+<body class="bg-[#0b1426] text-gray-100">
+    <!-- Fixed Navigation -->
+    <nav class="fixed w-full z-50 nav-blur">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold text-white">הינני</div>
+                <div class="hidden md:flex space-x-8">
+                    <!-- תיקון הטקסט בתפריט -->
+                    <a href="#story" class="text-white hover:text-gray-300 transition">הסיפור שלנו</a>
+                    <a href="#how" class="text-white hover:text-gray-300 transition">איך זה קורה</a>
+                    <a href="#who" class="text-white hover:text-gray-300 transition">מי אנחנו</a>
+                    <a href="#contact" class="text-white hover:text-gray-300 transition">צור קשר</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <div id="monkey-container"></div>
-    <div id="clock"><div id="clock-hand"></div></div>
-    <div id="victory-icons"></div>
-    <div id="victory-animation"></div>
+    <!-- Hero Section -->
+    <section class="hero-section flex items-center justify-center text-white">
+        <div class="text-center" data-aos="fade-up" data-aos-duration="3000">
+            <h1 class="text-7xl font-bold mb-6 text-shadow">ישיבת הינני</h1>
+            <p class="text-3xl mb-8">מגלים את המקור - בונים עתיד</p>
+            <a href="#story" class="inline-block px-8 py-3 bg-white text-blue-900 rounded-full text-lg font-semibold hover:bg-gray-100 transition">גלה עוד</a>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section id="story" class="story-bg text-white section-padding">
+        <div class="content-container px-6">
+            <div class="max-w-4xl mx-auto" data-aos="fade-up" data-aos-duration="3000">
+                <h2 class="text-5xl font-bold mb-12 gold-text text-center">הסיפור שלנו</h2>
+                
+                <p class="text-lg mb-6">
+                    יש רגעים שבהם רעיון גדול מתחיל מהשאלה הכי פשוטה. ככה, מול קפה שהתקרר, נולדה ישיבת "הינני". היינו שישה אנשים סביב שולחן קטן, מוקפים בניירות ורעיונות, כשאחד מאיתנו הרים את הראש ואמר את מה שכולנו חשבנו:
+                </p>
+
+                <div class="key-quote">
+                    "תגידו, למה בעצם אנחנו צריכים להקים עוד ישיבה תיכונית?"
+                </div>
+
+                <p class="text-lg mb-6">
+                    יכולנו להמשיך לכתוב תכניות. להמשיך לדבר על מצוינות, על שילובים, על איזונים. אבל השאלה הזו עצרה אותנו. כי היא דרכה תשובה אמיתית.
+                </p>
+
+                <p class="text-lg mb-6">
+                    יש לנו ישיבות מצוינות שמשלבות תורה ומדע, אבל אנחנו מחפשים משהו אחר. <span class="highlight-text">לא את השילוב - את המקור.</span>
+                </p>
+
+                <div class="transition-quote text-center">
+                    הגיע הזמן לעבור מחינוך של 'גם וגם' לחינוך של 'בגלל'
+                </div>
+
+                <p class="text-lg mb-8">
+                    אנחנו רואים את זה קורה כאן, בנתיבות, כבר מעל 20 שנים: אנשים שחיים חיים שלמים של תורה ומדע, של למדנות ויצירה, של עומק רוחני ועשייה בעולם. לא כי הם מצליחים "לשלב", אלא כי הם מבינים שהכול נובע מאותו מקור.
+                </p>
+
+                <p class="text-lg mb-8">
+                    הבנו שאנחנו צריכים לבנות בית חינוך שבו לא "משלבים עולמות", אלא מגלים את החיבור העמוק שתמיד היה שם. מקום שבו לומדים פיזיקה לא במקביל לגמרא, אלא בגלל הגמרא. שבו חוקרים את העולם לא בנוסף לתורה, אלא בגלל התורה. שבו עושים חסד לא כי "צריך לתרום לקהילה", אלא כי הלימוד העמוק מוביל בהכרח לאחריות ולדאגה לאחר. שבו המצוינות האישית והמעורבות החברתית צומחות מאותו מקור – מההבנה העמוקה ש"טובת הכלל ואושרו" הם לא עוד ערך, אלא התכלית של כל לימוד ועשייה.
+                </p>
+
+                <p class="text-lg mb-8">
+                    את זה אנחנו רוצים לבנות. זה מה ש"הינני" הולכת להיות.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How Section -->
+    <!-- החל מהקטע הזה: רקע לבן, טקסט כהה (תיקון הצבעים בהתאם לבקשה) -->
+    <section id="how" class="how-section section-padding">
+        <div class="content-container px-6">
+            <div class="max-w-4xl mx-auto" data-aos="fade-up" data-aos-duration="3000">
+                <h2 class="text-5xl font-bold mb-12 gold-text text-center">איך זה קורה בפועל?</h2>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="feature-card p-6">
+                        <h3 class="text-2xl font-bold mb-4">לימוד שמתחיל מהעיקר</h3>
+                        <p class="text-lg">
+                            אנחנו לא מתחילים מ"איך משלבים" אלא מ"מה העיקר". בבית המדרש שלנו לומדים את הסוגיות המהותיות – אלו שבונות השקפת עולם ומעצבות אישיות. כי כשמתחילים מהעיקר, החיבורים לשאר תחומי החיים מתגלים מאליהם.
+                        </p>
+                    </div>
+
+                    <div class="feature-card p-6">
+                        <h3 class="text-2xl font-bold mb-4">מצוינות שיש לה כיוון</h3>
+                        <p class="text-lg">
+                            המצוינות אצלנו היא לא מרוץ להישגים. כשתלמיד מעמיק בפיזיקה או במתמטיקה, הוא עושה את זה עם הבנה ברורה – לאן הידע הזה מוביל, איך הוא משרת מטרה גדולה יותר. זו מצוינות שיש לה משמעות.
+                        </p>
+                    </div>
+
+                    <div class="feature-card p-6">
+                        <h3 class="text-2xl font-bold mb-4">קהילה לומדת</h3>
+                        <p class="text-lg">
+                            הישיבה שלנו צומחת מתוך קהילה שחיה את החיבור הזה כבר שנים. המורים, החברים, המשפחות המארחות – כולם חלק ממארג אחד שמראה איך נראים חיים שלמים של תורה ועשייה.
+                        </p>
+                    </div>
+
+                    <div class="feature-card p-6">
+                        <h3 class="text-2xl font-bold mb-4">שאלות גדולות</h3>
+                        <p class="text-lg">
+                            אצלנו שואלים את השאלות הגדולות – על אמונה, על מדע, על חיים. לא כתרגיל אינטלקטואלי, אלא כדרך לבנות זהות עמוקה ושלמה. כי רק ככה מגלים את החיבורים האמיתיים.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Who Section -->
+    <section id="who" class="who-section section-padding">
+        <div class="content-container px-6">
+            <div class="max-w-4xl mx-auto" data-aos="fade-up" data-aos-duration="3000">
+                <h2 class="text-5xl font-bold mb-12 gold-text text-center">מי אנחנו?</h2>
+
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="flex-shrink-0">
+                        <img src="https://i.ytimg.com/vi/mQvy0JFiVFM/maxresdefault.jpg" alt="שמוליק בן שלום" class="rounded-full w-48 h-48 object-cover">
+                    </div>
+                    <div class="text-lg">
+                        <p class="mb-6">
+                            אני שמוליק בן שלום, בן למשפחה שחיה ונשמה תורה ועשייה. גדלתי בקיבוץ שבו הערכים של חינוך ושליחות היו חלק מהחיים. השורשים העמוקים של משפחתי, לצד החיים בקהילה מעשית ומחוברת לארץ, עיצבו בי את האמונה שחינוך הוא הדרך המרכזית ליצור שינוי אמיתי.
+                        </p>
+                        <p class="mb-6">
+                            אני מאמין שחינוך טוב מתחיל מבפנים – הוא שואל את השאלות הגדולות ומחפש את החיבור האמיתי. חינוך כזה לא רק מעניק ידע, אלא יוצר תלמידים שמגלים את עצמם, את העולם ואת מקומם בו. הוא מעורר סקרנות, מטפח אחריות ובונה חיים עם משמעות.
+                        </p>
+                        <p class="mb-6">
+                            במהלך השנים הקמתי גרעינים חברתיים בירוחם ובנתיבות, ישיבות הסדר שמחברות תורה ועשייה, וישיבה תיכונית שהפכה לאחת המבוקשות והמצליחות בארץ. על פועלי זכיתי בפרס בן-גוריון על תרומה חברתית והשיאה משואה ביום העצמאות בהר הרצל. פרויקטים אלו מוכיחים שהשילוב בין חזון לעשייה יכול לשנות חיים.
+                        </p>
+                        <p class="mb-6">
+                            "הינני" הוא השלב הבא במסע. זה המקום שבו הניסיון שצברתי פוגש את הדור הבא – עם צוות מסור, תלמידים סקרנים וחזון ברור. כאן, בונים בית שמגדל אנשים למצוינות, לעומק ולעשייה אמיתית שמובילה שינוי.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- For Whom Section -->
+    <section id="for-whom" class="for-whom-section section-padding">
+        <div class="content-container px-6">
+            <div class="max-w-4xl mx-auto" data-aos="fade-up" data-aos-duration="3000">
+                <h2 class="text-5xl font-bold mb-12 gold-text text-center">למי זה מתאים?</h2>
+
+                <p class="text-lg mb-8">
+                    אנחנו לא מחפשים את המושלמים. אנחנו מחפשים את האמיתיים. כאלה שמוכנים להשקיע, לשאול שאלות גדולות וללכת עד הסוף כדי לגלות את הכוחות שלהם.
+                </p>
+
+                <p class="text-lg mb-8">
+                    "הינני" הוא מקום פנימייתי מכיתה ט' ומעלה, וזה אומר משהו. לא כל אחד מתאים לחיים כאלה – להיות חלק מקהילה חיה, לחלוק את היום-יום עם חברים, ולהצליח גם בלימודים וגם בחיים החברתיים. זה דורש אופי של מישהו שמוכן לתת מעצמו, להתגמש, ולצמוח בסביבה שמלווה אותך בכל צעד.
+                </p>
+
+                <p class="text-lg mb-8">
+                    זה מקום שנותן לך את המקסימום – צוות מסור, לימודים ברמה הגבוהה ביותר, וסביבה שתומכת בך ודורשת ממך להוציא את המירב. אם אתה מחפש מקום שבו דורשים ממך הרבה, אבל מאמינים בך אפילו יותר – יכול להיות ש"הינני" זה המקום בשבילך.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- First Cohort Section -->
+    <section id="first-cohort" class="first-cohort-section section-padding">
+        <div class="content-container px-6">
+            <div class="max-w-4xl mx-auto" data-aos="fade-up" data-aos-duration="3000">
+                <h2 class="text-5xl font-bold mb-12 gold-text text-center">המחזור הראשון</h2>
+
+                <p class="text-lg mb-8">
+                    המחזור הראשון שלנו יכלול שתי כיתות – קבוצה קטנה ומיוחדת של תלמידים שיהיו חלק מהתחלה חדשה ומרגשת. זה לא רק להצטרף לישיבה, זה להיות חלק מיצירה, לבנות יחד משהו שמשאיר חותם.
+                </p>
+
+                <p class="text-lg mb-8">
+                    בקמפוס שלנו בבית דביר מחכים לכם חדרי פנימיה נוחים וסביבה שמרגישים בה בבית. מקום עם מרחבים ללמידה, לחיים משותפים ולצמיחה. הצוות שלנו כבר מוכן ללוות אתכם, להקשיב, לאתגר ולהיות חלק מהמסע הזה יחד אתכם.
+                </p>
+
+                <p class="text-lg mb-8">
+                    החזון הזה מתחיל עכשיו, איתכם. אם אתם רוצים להיות שם מההתחלה – אתם בדיוק מי שאנחנו מחפשים.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section section-padding">
+        <div class="content-container px-6">
+            <div class="max-w-4xl mx-auto" data-aos="fade-up" data-aos-duration="3000">
+                <h2 class="text-5xl font-bold mb-12 gold-text text-center">ליצירת קשר</h2>
+
+                <p class="text-lg mb-8 text-center">
+                    להתקשרות: <a href="tel:0555555555" class="underline">055-555-5555</a>
+                </p>
+
+                <form class="max-w-2xl mx-auto">
+                    <div class="mb-6">
+                        <label for="name" class="block text-lg mb-2">שם מלא</label>
+                        <input type="text" id="name" class="w-full p-3 bg-transparent border border-gray-600 rounded-lg focus:outline-none focus:border-[#DEB541]" required>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="phone" class="block text-lg mb-2">טלפון</label>
+                        <input type="tel" id="phone" class="w-full p-3 bg-transparent border border-gray-600 rounded-lg focus:outline-none focus:border-[#DEB541]" required>
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="email" class="block text-lg mb-2">מייל</label>
+                        <input type="email" id="email" class="w-full p-3 bg-transparent border border-gray-600 rounded-lg focus:outline-none focus:border-[#DEB541]" required>
+                    </div>
+
+                    <button type="submit" class="w-full px-8 py-3 bg-[#DEB541] text-[#0b1426] rounded-full text-lg font-semibold hover:bg-[#c9a03d] transition">שלח פרטים</button>
+                </form>
+            </div>
+        </div>
+    </section>
 
     <script>
-        const words = [
-            { hebrew: 'שולחן', english: 'DESK', image: 'https://img.freepik.com/free-photo/office-desktop-with-notebook_23-2148174059.jpg' },
-            { hebrew: 'מנורה', english: 'LAMP', image: 'https://img.freepik.com/free-photo/modern-photorealistic-lamp-design_23-2151038974.jpg' },
-            { hebrew: 'ספר', english: 'BOOK', image: 'https://img.freepik.com/free-photo/pages-open-book_23-2147690479.jpg' },
-            { hebrew: 'מחשב', english: 'COMPUTER', image: 'https://img.freepik.com/free-photo/laptop-with-blank-black-screen-white-table_53876-97915.jpg' },
-            { hebrew: 'קוף', english: 'MONKEY', image: 'https://img.freepik.com/free-photo/beautiful-monkey-spending-time-nature_23-2150754462.jpg' }
-        ];
-
-        let score = 0;
-        let timeLeft = 60;
-        let timer;
-        let flippedCards = [];
-        let matchedPairs = 0;
-        let level = 1;
-        let monkeyAnimation;
-        let backgroundMusic;
-        let correctSound;
-        let winSound;
-        let victoryAnimation;
-
-        const gameContainer = document.getElementById('game-container');
-        const wordContainer = document.getElementById('word-container');
-        const scoreElement = document.getElementById('score');
-        const timerElement = document.getElementById('timer');
-        const startButton = document.getElementById('start-button');
-        const restartButton = document.getElementById('restart-button');
-        const clockHand = document.getElementById('clock-hand');
-        const victoryIcons = document.getElementById('victory-icons');
-        const victoryAnimationContainer = document.getElementById('victory-animation');
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        function createWordCards() {
-            const allWords = [...words.map(w => ({ ...w, type: 'hebrew' })), ...words.map(w => ({ ...w, type: 'english' }))];
-            shuffleArray(allWords);
-
-            allWords.forEach((word, index) => {
-                const card = document.createElement('div');
-                card.className = 'word-card';
-                card.innerHTML = `
-                    <div class="word-card-inner">
-                        <div class="word-card-front">?</div>
-                        <div class="word-card-back" style="background-image: url('${word.image}');">
-                            ${word.type === 'hebrew' ? word.hebrew : word.english}
-                        </div>
-                    </div>
-                `;
-                card.addEventListener('click', () => flipCard(card, word, index));
-                wordContainer.appendChild(card);
-            });
-        }
-
-        function flipCard(card, word, index) {
-            if (flippedCards.length < 2 && !flippedCards.includes(index) && !card.classList.contains('flipped')) {
-                card.classList.add('flipped');
-                flippedCards.push({index, word});
-
-                if (flippedCards.length === 2) {
-                    setTimeout(checkMatch, 500);
-                }
-            }
-        }
-
-        function checkMatch() {
-            const [card1, card2] = flippedCards;
-            const isMatch = (card1.word.hebrew === card2.word.hebrew && card1.word.english === card2.word.english);
-
-            if (isMatch) {
-                score += 10 * level;
-                scoreElement.textContent = `ניקוד: ${score}`;
-                matchedPairs++;
-                correctSound.play().catch(error => console.log('Error playing correct sound:', error));
-                animateMonkey();
-
-                if (matchedPairs === words.length) {
-                    levelUp();
-                }
-            } else {
-                setTimeout(() => {
-                    document.querySelectorAll('.word-card')[card1.index].classList.remove('flipped');
-                    document.querySelectorAll('.word-card')[card2.index].classList.remove('flipped');
-                }, 1000);
-            }
-
-            flippedCards = [];
-        }
-
-        function startGame() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            audioContext.resume().then(() => console.log('AudioContext resumed'));
-
-            score = 0;
-            timeLeft = 60;
-            matchedPairs = 0;
-            flippedCards = [];
-            level = 1;
-            scoreElement.textContent = 'ניקוד: 0';
-            timerElement.textContent = 'זמן: 60 שניות';
-            wordContainer.innerHTML = '';
-            startButton.style.display = 'none';
-            restartButton.style.display = 'none';
-
-            createWordCards();
-            playBackgroundMusic();
-            loadMonkeyAnimation();
-
-            timer = setInterval(() => {
-                timeLeft--;
-                timerElement.textContent = `זמן: ${timeLeft} שניות`;
-                updateClockHand();
-
-                if (timeLeft <= 0) {
-                    endGame(false);
-                }
-            }, 1000);
-        }
-
-        function endGame(isWin) {
-            clearInterval(timer);
-            backgroundMusic.pause();
-
-            if (isWin) {
-                alert(`כל הכבוד! סיימת את המשחק עם ${score} נקודות!`);
-            } else {
-                alert(`נגמר הזמן! הניקוד הסופי שלך הוא ${score} נקודות.`);
-            }
-
-            restartButton.style.display = 'block';
-        }
-
-        function levelUp() {
-            level++;
-            winSound.play().catch(error => console.log('Error playing win sound:', error));
-            showVictoryAnimation();
-
-            setTimeout(() => {
-                timeLeft += 30;
-                matchedPairs = 0;
-                wordContainer.innerHTML = '';
-                createWordCards();
-            }, 3000);
-        }
-
-        function loadMonkeyAnimation() {
-            monkeyAnimation = lottie.loadAnimation({
-                container: document.getElementById('monkey-container'),
-                renderer: 'svg',
-                loop: true,
-                autoplay: true,
-                path: 'https://nenene333.github.io/hebrew-english-game/monkey.json'
-            });
-        }
-
-        function animateMonkey() {
-            if (monkeyAnimation) {
-                monkeyAnimation.playSegments([0, 60], true);
-            }
-        }
-
-        function playBackgroundMusic() {
-            backgroundMusic = new Audio('https://nenene333.github.io/hebrew-english-game/bkms.mp3');
-            backgroundMusic.loop = true;
-            backgroundMusic.play().catch(error => console.log('Error playing background music:', error));
-        }
-
-        function loadSounds() {
-            correctSound = new Audio('https://nenene333.github.io/hebrew-english-game/good.mp3');
-            winSound = new Audio('https://nenene333.github.io/hebrew-english-game/win.mp3');
-        }
-
-        function updateClockHand() {
-            const rotation = 360 - (timeLeft / 60) * 360;
-            clockHand.style.transform = `translateX(-50%) rotate(${rotation}deg)`;
-        }
-
-        function showVictoryAnimation() {
-            victoryAnimationContainer.style.display = 'block';
-            victoryAnimation = lottie.loadAnimation({
-                container: victoryAnimationContainer,
-                renderer: 'svg',
-                loop: false,
-                autoplay: true,
-                path: 'https://nenene333.github.io/hebrew-english-game/nnn.json'
-            });
-
-            victoryAnimation.addEventListener('complete', () => {
-                victoryAnimationContainer.style.display = 'none';
-                addVictoryIcon();
-            });
-        }
-
-        function addVictoryIcon() {
-            const iconContainer = document.createElement('div');
-            iconContainer.className = 'victory-icon';
-            victoryIcons.appendChild(iconContainer);
-
-            lottie.loadAnimation({
-                container: iconContainer,
-                renderer: 'svg',
-                loop: true,
-                autoplay: true,
-                path: 'https://nenene333.github.io/hebrew-english-game/nnn.json'
-            });
-        }
-
-        startButton.addEventListener('click', startGame);
-        restartButton.addEventListener('click', startGame);
-
-        document.addEventListener('DOMContentLoaded', () => {
-            loadMonkeyAnimation();
-            loadSounds();
-        });
+        AOS.init();
     </script>
 </body>
 </html>
